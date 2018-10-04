@@ -54,7 +54,10 @@ def detect_spikes(vec):
 
     intervals = np.where(diff_abs > thresh)
 
-    chunks = np.diff(intervals)
+    diff_int = np.diff(intervals)
+    onsets_idx = np.where(diff_int > 1)
+
+    idx = diff_int[np.array(onsets_idx[-1])]
 
     # todo: extract
 

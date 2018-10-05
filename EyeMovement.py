@@ -29,9 +29,18 @@ def main():
     column_sd_r = right_eye_reduced['median_x'].std()
     right_eye_reduced['median_x'][right_eye_reduced['median_x'] < (column_mean_r - 4 * column_sd_r)] = np.nan
 
-    plt.plot(left_eye_reduced['x'], left_eye_reduced['y'])
-    plt.plot(left_eye_reduced['median_x'], left_eye_reduced['median_y'])
-    plt.show()
+    clean_data_columns = {'Index': left_eye_reduced['frame'],
+                          'Time': left_eye_reduced['time'],
+                          'X (Left Eye)': left_eye_reduced['median_x'],
+                          'Y (Left Eye)': left_eye_reduced['median_y'],
+                          'X (Right Eye)': right_eye_reduced['median_x'],
+                          'Y (Right Eye)': right_eye_reduced['median_y']}
+    clean_data_df = pd.DataFrame(data=clean_data_columns)
+    clean_data_df.to_csv('data\clean_data_eyes.csv')
+
+    # plt.plot(left_eye_reduced['x'], left_eye_reduced['y'])
+    # plt.plot(left_eye_reduced['median_x'], left_eye_reduced['median_y'])
+    # plt.show()
 
     # # replace every value outside of Median+3*Std with an average value
     # # the average value is computed from neighbouring values

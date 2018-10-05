@@ -51,6 +51,35 @@ def pairwise(iterable):
     next(b, None)
     return zip(a, b)
 
+def combine_eye_memVoltage(eyeFilePath, memVoltageFilePath, save_csv = False, save_name = 'eye_voltage.csv'):
+    # combines eye movement data and membrane voltage data into one dataframe
+    # then save as .csv
+    eyeData = pd.read_csv(eyeFilePath)
+    # memVData = pd.read_csv(memVoltageFilePath)
+
+    # downsample both to something sensible / chunk to every x.x seconds
+    chunkTime= 0.1 # seconds
+    decimalPlaces = 1 # round time to this many decimal places
+
+    # chunk time via rounding
+    time = eyeData['Time']
+    timeRounded = round(time, decimalPlaces)
+
+    # unvectorised approach
+
+    transition_points = np.where(np.diff(timeRounded))[0] + 1  # +1 to make it at the first instance of change
+    transition_points = np.insert(transition_points, 0, 0)  # add 0 in position 0
+    transition_points = np.append(transition_points, timeRounded.shape)
+
+
+
+    # save .csv
+    if save_csv is True:
+        eye_voltage_df.to_csv(save_name)
+    return 1
+
+
+
 
 # test run
 if __name__ == '__main__':
@@ -61,9 +90,14 @@ if __name__ == '__main__':
     directionDf = pd.read_csv('data/direction_motor.csv')
     directionArray = directionDf['direction']
 
-
+    # combine direction and voltage
     direction_voltage_df = direction_voltage(fakeDirectionData, fakeMemVoltageData, save_csv = True)
     print(direction_voltage_df)
+
+    # combine eye movement and voltage
+    eyeFilePath = 'data/clean_data_eyes.csv'
+    memVoltageFilePath = 'data/still_waiting.csv'
+    combine_eye_memVoltage(eyeFilePath, memVoltageFilePath, save_csv=False, save_name='eye_voltage.csv')
 
 
 

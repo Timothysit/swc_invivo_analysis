@@ -1,8 +1,9 @@
 # process neuron voltage and spike rate based on anticlockwise / clockwise data
 import numpy as np
 import pandas as pd
+from itertools import tee # , izip
 
-def direction_voltage(direction, mem_voltage, save_csv = False, save_name = 'direction_voltage.csv'):
+def direction_voltage(direction, mem_voltage, save_csv=False, save_name='direction_voltage.csv'):
     # compute mean membrane voltage for each clockwise/anticlockwise trial
     """
     INPUT
@@ -31,7 +32,9 @@ def direction_voltage(direction, mem_voltage, save_csv = False, save_name = 'dir
         mean_mem_voltage.append(trial_voltage)
 
     # make pandas dataframe
-    direction_voltage_df = pd.DataFrame({'Trial': trial, 'Mean voltage': mean_mem_voltage, 'Clockwise': clockwise})
+    direction_voltage_df = pd.DataFrame({'Trial': trial,
+                                         'Mean voltage': mean_mem_voltage,
+                                         'Clockwise': clockwise})
 
     if save_csv is True:
         direction_voltage_df.to_csv(save_name, sep = ',')
@@ -42,7 +45,6 @@ def direction_spike_rate():
     # compute the spike rate for
     return 1
 
-from itertools import tee # , izip
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)
@@ -54,6 +56,12 @@ def pairwise(iterable):
 if __name__ == '__main__':
     fakeDirectionData = np.array([0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1])
     fakeMemVoltageData = np.array([0.4, 0.7, 0.5, 1.7, 2.5, 3.5, 0.4, 0.7, 1.2, 1.3, 1.5])
+
+    # real data
+    directionDf = pd.read_csv('data/direction_motor.csv')
+    directionArray = directionDf['direction']
+
+
     direction_voltage_df = direction_voltage(fakeDirectionData, fakeMemVoltageData, save_csv = True)
     print(direction_voltage_df)
 

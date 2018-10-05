@@ -1,4 +1,3 @@
-
 #Analysis of motor movement
 #Input is csv file (motorFile) out put is also csv file
 #MotorFile = pd.read_csv('studentCourse_command.csv')
@@ -11,8 +10,6 @@ import numpy as np
 # motor_df = pd.DataFrame(fake_motor_data, columns = ['command','time' ])
 # print(motor_df)
 
-commandfile = pd.DataFrame({'command': np.array([0, 1, 2, 3, 7, -7, 8, 9, -2, -20, -25])})
-
 
 def motor_direction(commandfile):
     # save the array containing commandvalues as a new column
@@ -23,6 +20,7 @@ def motor_direction(commandfile):
 
     # calculate the direction by determining the change from current command to the next command
     direction = cmd[:-1] < cmd[1:]
+    direction = direction * 1 # convert boolean to int
     print(direction)
 
     #add a time array
@@ -38,15 +36,10 @@ def motor_direction(commandfile):
     real_motor_df.to_csv("direction_motor.csv", sep = ",")
     return real_motor_df
 
-motor_direction(commandfile)
+# fake test data
+commandfile = pd.DataFrame({'command': np.array([0, 1, 2, 3, 7, -7, 8, 9, -2, -20, -25])})
 
-
-
-
-
-
-
-
-
-
-
+# actual data
+if __name__ == '__main__':
+    commandDf = pd.read_csv('studentCourse_command.csv')
+    motor_direction(commandDf)

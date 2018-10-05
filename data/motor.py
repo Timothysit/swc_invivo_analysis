@@ -1,9 +1,12 @@
-#Analysis of motor movement
-#Input is csv file (motorFile) out put is also csv file
-#MotorFile = pd.read_csv('studentCourse_command.csv')
+"""
+Analysis of motor movement
+Input is csv file (motorFile) output is also csv file
+"""
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from matplotlib import pyplot as plt
 
 # making a mini dataframe with fake data
 # fake_motor_data = {'command':[0,10,15,-5,-10,-15,0], 'time':[0,1,2,3,4,5,6]}
@@ -12,6 +15,13 @@ import numpy as np
 
 
 def motor_direction(commandfile):
+    """
+    Determines the direction (clockwise/counterclockwise)
+    of visual stimuli delivered using a command signal
+
+    :param pd.DataFrame commandfile:
+    :return:
+    """
     # save the array containing commandvalues as a new column
     command_column = commandfile['command']
     print(command_column)
@@ -19,27 +29,38 @@ def motor_direction(commandfile):
     print(cmd)
 
     # calculate the direction by determining the change from current command to the next command
-    direction = cmd[:-1] < cmd[1:]
-    direction = direction * 1 # convert boolean to int
+
+    direction = np.zeros((cmd.size - 1))  # -1 because diff
+    direction[cmd[:-1] < cmd[1:]] = 1
+    direction[cmd[:-1] > cmd[1:]] = -1
     print(direction)
 
-    #add a time array
+    # add a time array
     length_direction_array = np.size(direction)
     print("length of direction array is:", length_direction_array)
     time = np.arange(length_direction_array)
     print(time)
 
-    # make a dateframe of all the data
-    real_motor_df = pd.DataFrame({"command": cmd[:-1], "direction":direction, "time":time})
+    # make a dataframe of all the data
+    real_motor_df = pd.DataFrame({"command": cmd[:-1],
+                                  "direction": direction,
+                                  "time": time})
+
+    plt.plot(real_motor_df['command'])
+    plt.plot(real_motor_df['direction'])
+    plt.show()
+
     print(real_motor_df)
 
-    real_motor_df.to_csv("direction_motor.csv", sep = ",")
+    real_motor_df.to_csv("direction_motor.csv", sep=",")
     return real_motor_df
 
+
 # fake test data
-commandfile = pd.DataFrame({'command': np.array([0, 1, 2, 3, 7, -7, 8, 9, -2, -20, -25])})
+test_cmd_df = pd.DataFrame({'command': np.array([0, 1, 2, 3, 7, -7, 8, 9, -2, -20, -25])})
+
 
 # actual data
 if __name__ == '__main__':
-    commandDf = pd.read_csv('studentCourse_command.csv')
-    motor_direction(commandDf)
+    command_df = pd.read_csv('studentCourse_command.csv')
+    motor_direction(command_df)

@@ -31,7 +31,9 @@ def direction_voltage(direction, mem_voltage, save_csv = False, save_name = 'dir
         mean_mem_voltage.append(trial_voltage)
 
     # make pandas dataframe
-    direction_voltage_df = pd.DataFrame({'Trial': trial, 'Mean voltage': mean_mem_voltage, 'Clockwise': clockwise})
+    direction_voltage_df = pd.DataFrame({'Trial': trial,
+                                         'Mean voltage': mean_mem_voltage,
+                                         'Clockwise': clockwise})
 
     if save_csv is True:
         direction_voltage_df.to_csv(save_name, sep = ',')

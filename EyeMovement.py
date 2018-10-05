@@ -80,7 +80,7 @@ def drop_redundant_columns(raw_eye_df):
     :return:
     """
     redundant_columns = ['x to arena', 'y to arena', 'measure', 'in trakcing roi']
-    reduced_eye_df = raw_eye_df.drop(columns=redundant_columns)
+    reduced_eye_df = raw_eye_df.drop(redundant_columns, axis = 1)
     return reduced_eye_df
 
 

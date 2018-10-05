@@ -5,8 +5,10 @@ import numpy as np
 import pandas as pd
 from scipy.signal import savgol_filter
 
+from matplotlib import pyplot as plt
 
-def process_cell(vm, param):
+
+def process_cell(vm, param=[]):
     """
     FOR each trial, detect spikes and clip
 
@@ -16,19 +18,18 @@ def process_cell(vm, param):
     """
     vm = to_np_array(vm)
 
-    vm_clipped = np.full(vm.shape, np.nan)
-    vm_spikes = []
+    all_trials_vm_clipped = np.full(vm.shape, np.nan)
+    all_spikes = []
 
-    for nr_trial in range(vm.shape[1]):
-        curr_data = vm[:, nr_trial]
+    for trial_idx in range(vm.shape[1]):
+        curr_data = vm[:, trial_idx]
 
-        spikes = []
-        spikes = detect_spikes(curr_data)
+        current_trial_spikes = detect_spikes(curr_data)
 
-        vm_spikes[nr_trial] = spikes
-        vm_clipped[:, nr_trial] = clip_spikes(curr_data, spikes)
+        all_spikes.append(current_trial_spikes)
+        all_trials_vm_clipped[:, trial_idx] = clip_spikes(curr_data, current_trial_spikes)
 
-    return vm_clipped, vm_spikes
+    return all_trials_vm_clipped, all_spikes
 
 
 def to_np_array(vm):
@@ -40,28 +41,48 @@ def to_np_array(vm):
 
 
 def detect_spikes(vec):
-    filt = savgol_filter(vec, int(.05 * 10000 + 1), 2)
+    vec_diff_abs = filter_for_thresholding(vec)
 
-    # diff -> mean, std
-    diff = np.diff(filt)
-    diff_abs = np.abs(diff)
+    thresh = .4  # .5  # TODO: check rise-time in relation to sampling rate
+    if __debug__:
+        plt.plot(vec_diff_abs)
+        plt.plot(np.full((vec_diff_abs.size), thresh))
 
-    # diff_mean = np.mean(diff_abs)
-    # diff_std = np.std(diff_abs)
-    # thresh = diff_mean + diff_std * 3
+    spike_peak_points = threshold_trace(thresh, vec_diff_abs)
 
-    thresh = .5  # TODO: check rise-time in relation to sampling rate
+    if __debug__:
+        for spike_peak_point in spike_peak_points:
+            plt.axvline(spike_peak_point, color='r')
+        plt.show()
 
-    intervals = np.where(diff_abs > thresh)
+    spikes = extract_spikes(spike_peak_points, vec)
 
-    diff_int = np.diff(intervals)
-    onsets_idx = np.where(diff_int > 1)
-
-    idx = diff_int[np.array(onsets_idx[-1])]
-
-    # todo: extract
-
+    if __debug__:
+        for spike in spikes:
+            plt.plot(spike)
+        plt.show()
     return spikes
+
+
+def extract_spikes(spike_peak_points, vec):
+    spike_n_pnts = 100
+    spikes = [vec[peak_pnt - spike_n_pnts // 2:peak_pnt + spike_n_pnts // 2] for peak_pnt in spike_peak_points]
+    return spikes
+
+
+def filter_for_thresholding(vec, n_points_rise_t=10, filter_window_length=int(.05 * 10000 + 1)):
+    vec_filt = savgol_filter(vec, filter_window_length, 2)
+    vec_diff = vec_filt[n_points_rise_t:] - vec_filt[:-n_points_rise_t]
+    vec_diff_abs = np.abs(vec_diff)
+    return vec_diff_abs
+
+
+def threshold_trace(thresh, vec_diff_abs):
+    vec_diff_abs_idx = np.where(vec_diff_abs > thresh)[0]
+    idx_diff = np.diff(vec_diff_abs_idx)
+    idx_diff_onsets = np.where(idx_diff > 1)[-1]
+    spike_peak_points = [vec_diff_abs_idx[start] for start in idx_diff_onsets]
+    return spike_peak_points
 
 
 def clip_spikes(vec, times, param=[]):
